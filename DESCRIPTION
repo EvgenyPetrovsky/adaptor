@@ -1,0 +1,16 @@
+Package: adaptor
+Type: Package
+Title: Read and write data in specific formats
+Version: 0.1.0
+Authors@R:
+    person("Evgeny", "Petrovskiy", email = "ev.petrovsky@gmail.com", role = c("aut", "cre"))
+Description: Set of functions that help to read data from files in specific 
+    format and then write it back into files in specific format. Can be very 
+    useful in combination with other functionality that is focused on data
+    manipulation and not IO.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0
+Imports:
+    magrittr
