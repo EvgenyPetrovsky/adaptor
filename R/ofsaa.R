@@ -27,9 +27,10 @@ ofsaa_data_object <- function(header, data, footer) {
   serializeData <- function() {
     column_order <- data %>% names()
     readydata <- data %>%
-      dplyr::mutate(REC_TYPE = 2) %>%
-      dplyr::rename(`1` = REC_TYPE) %>%
-      dplyr::select(c(`1`, column_order))
+      magrittr::inset("REC_TYPE", value = 2) %>%
+      magrittr::inset("1", value = .$REC_TYPE) %>%
+      subset(select = c("1", column_order))
+
     captured_output <- capture.output(
       write.table(
         x = readydata, col.names = T, sep = col_sep, na = "", dec = dec_del,
