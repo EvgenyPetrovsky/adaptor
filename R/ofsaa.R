@@ -25,8 +25,11 @@ ofsaa_data_object <- function(header, data, footer) {
   }
 
   serializeData <- function() {
+    column_order <- data %>% names()
     readydata <- data %>%
-      mutate(REC_TYPE = 2) %>% rename(`1` = REC_TYPE)
+      dplyr::mutate(REC_TYPE = 2) %>%
+      dplyr::rename(`1` = REC_TYPE) %>%
+      dplyr::select(c(`1`, column_order))
     captured_output <- capture.output(
       write.table(
         x = readydata, col.names = T, sep = col_sep, na = "", dec = dec_del,
@@ -84,21 +87,43 @@ ofsaa_header <- function(fileset, csa_id, csa_name, version, business_date, busi
 #' @param columns vector of column names that defines what columns should
 #'   present in the result dataframe and in which order should they appear
 ofsaa_data <- function(dataframe, columns = NULL) {
-  if (is.null(columns)) {
-    dataframe
-  } else {
-    cols <- dataframe %>% colnames
 
-    new_cols <- columns[!(columns %in% cols)]
-    addColumn <- function(data, column) {
-      data[column] <- NA
-      data
+  formatted <-
+    dataframe %>%
+    names() %>%
+    Map(
+      f = function(x) {
+        col_type <-
+          if (substr(x, 1, 2) == "D_") {"date"}
+          else if (substr(x, 1, 2) == "F_") {"number"}
+          else if (substr(x, 1, 2) == "N_") {"number"}
+          else if (substr(x, 1, 2) == "V_") {"varchar"}
+          else {"?"}
+        formatColumns(value = dataframe[[x]], data_type = col_type)
+      }
+    ) %>%
+    as.data.frame(
+      stringsAsFactors = FALSE
+    )
+
+  expanded <-
+    if (is.null(columns)) {
+      formatted
+    } else {
+      cols <- formatted %>% colnames
+
+      new_cols <- columns[!(columns %in% cols)]
+      addColumn <- function(data, column) {
+        data[column] <- NA
+        data
+      }
+      expanded <-
+        new_cols %>%
+        Reduce(x = ., f = addColumn, init = formatted) %>%
+        subset(select = columns)
     }
-    expanded <-
-      new_cols %>%
-      Reduce(x = ., f = addColumn, init = dataframe) %>%
-      subset(select = columns)
-  }
+
+  expanded
 
 }
 
@@ -113,4 +138,37 @@ ofsaa_data <- function(dataframe, columns = NULL) {
 #'   in body dataframe)
 ofsaa_footer <- function(nrow) {
   list(nrow = nrow)
+}
+
+#' Format values according to type representation for OFSAA
+#'
+#' Function takes vector of values as their type and returns vector of formatted
+#' values ready to be stored in a file
+#'
+#' @param value vector of values
+#' @param data_type data type of values in a vector
+#' @param max_num_len maximum length of number
+#' @param max_dec_len maximum number of decimal digits in number
+formatColumns <- function(
+  value,
+  data_type = c("varchar", "number", "date", "?"),
+  max_num_len = NULL, max_dec_len = NULL
+) {
+  data_type <- match.arg(data_type)
+
+  if (data_type == "varchar") {
+    as.character(value)
+  } else if (data_type == "number") {
+    value
+  } else if (data_type == "date") {
+    format(value, "%Y%m%d")
+  } else {
+    if (class(value) == "Date") {
+      format(value, "%Y%m%d")
+    } else if (is.numeric(value)) {
+      value
+    } else {
+      as.character(value)
+    }
+  }
 }
