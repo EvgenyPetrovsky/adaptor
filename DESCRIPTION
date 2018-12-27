@@ -8,7 +8,7 @@ Description: Set of functions that help to read data from files in specific
     format and then write it back into files in specific format. Can be very 
     useful in combination with other functionality that is focused on data
     manipulation and not IO.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
