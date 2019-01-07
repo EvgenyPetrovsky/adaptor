@@ -25,7 +25,8 @@ ofsaa_data_object <- function(header, data, footer) {
   }
 
   serializeData <- function() {
-    column_order <- data %>% names() %>% extract(. != "REC_TYPE (=2)")
+    column_order <- data %>% names() %>% magrittr::extract(. != "REC_TYPE (=2)")
+
     readydata <-
       if(nrow(data) == 0) {
         data %>%
