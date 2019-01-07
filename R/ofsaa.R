@@ -25,11 +25,18 @@ ofsaa_data_object <- function(header, data, footer) {
   }
 
   serializeData <- function() {
-    column_order <- data %>% names()
-    readydata <- data %>%
-      magrittr::inset("REC_TYPE", value = 2) %>%
-      magrittr::inset("1", value = .$REC_TYPE) %>%
-      subset(select = c("1", column_order))
+    column_order <- data %>% names() %>% magrittr::extract(. != "REC_TYPE (=2)")
+
+    readydata <-
+      if(nrow(data) == 0) {
+        data %>%
+          magrittr::inset("1", value = character()) %>%
+          subset(select = c("1", column_order))
+      } else {
+        data %>%
+          magrittr::inset("1", value = "2") %>%
+          subset(select = c("1", column_order))
+      }
 
     captured_output <- capture.output(
       write.table(
@@ -115,7 +122,11 @@ ofsaa_data <- function(dataframe, columns = NULL) {
 
       new_cols <- columns[!(columns %in% cols)]
       addColumn <- function(data, column) {
-        data[column] <- NA
+        if (nrow(data) == 0) {
+          data[column] <- character()
+        } else {
+          data[column] <- NA
+        }
         data
       }
       expanded <-
