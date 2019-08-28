@@ -13,6 +13,7 @@ ofsaa_data_object <- function(header, data, footer) {
   serializeHeader <- function() {
     paste(
       "0",
+      "UTF-8",
       header$fileset,
       header$csa_id,
       header$csa_name,

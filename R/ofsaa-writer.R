@@ -7,5 +7,3 @@
 write_ofsaa <- function(data_object, file) {
   writeLines(text = data_object, con = file)
 }
-
-
