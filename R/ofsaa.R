@@ -7,19 +7,24 @@
 #' @param footer footer object created by \link{ofsaa_footer} function
 ofsaa_data_object <- function(header, data, footer) {
 
-  col_sep <- ";"
-  dec_del <- ","
+  col_sep  <- ";"
+  dec_del  <- ","
+  sys_time <- Sys.time()
 
   serializeHeader <- function() {
+
+    #<Record indicator>;<Character set>;<File set code>;<CSA table>;<File version>;<Time zone (GMT+)>;<Business date>;<Business time>;<Extraction Date>
     paste(
       "0",
       "UTF-8",
       header$fileset,
-      header$csa_id,
+      #header$csa_id,
       header$csa_name,
       header$version,
+      (sys_time %>% format("%z") %>% as.double / 100) %>% format(decimal.mark = ",", nsmall = 2),
       header$business_date,
       header$business_time,
+      format(sys_time, "%Y%m%d:%H%M%S"),
       "",
       sep = col_sep
     )
